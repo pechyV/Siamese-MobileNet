@@ -16,7 +16,7 @@ class SiameseUNet(nn.Module):
         # Bottleneck
         self.bottleneck = self.conv_block(512, 1024)
         
-        # Decoder (opraveny rozměry)
+        # Decoder
         self.dec_conv4 = self.conv_block(1024 + 512, 512)
         self.dec_conv3 = self.conv_block(512 + 256, 256)
         self.dec_conv2 = self.conv_block(256 + 128, 128)
@@ -83,7 +83,6 @@ def get_model(device):
         
     model.to(device)
     
-    # Získání jmen GPU zařízení
     if torch.cuda.device_count() > 0:
         logging.info(f"Using {torch.cuda.device_count()} GPU(s)!")
         for i in range(torch.cuda.device_count()):

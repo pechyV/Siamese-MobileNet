@@ -6,7 +6,11 @@ from tqdm import tqdm
 from modules.dataset import ChangeDetectionDataset
 from model.siamese_unet import SiameseUNet
 import numpy as np
+from modules.utils import setup_logging
 import logging
+
+# Nastavení logování
+setup_logging()
 
 def evaluate():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

@@ -49,13 +49,15 @@ if __name__ == "__main__":
     """ Parametry """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = get_model(device)
+    learning_rate = 0.001
+    num_epochs = 5
+    batch_size = 8
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    num_epochs = 10
+    optimizer = optim.Adam(model.parameters(), learning_rate)
     train_root_dir = "./test_dataset/train/"
     val_root_dir = "./test_dataset/val/"
     out_model = "./trained_model/siamese_unet.pth"
-
+    
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
@@ -64,8 +66,8 @@ if __name__ == "__main__":
     train_dataset = ChangeDetectionDataset(train_root_dir, transform=transform)
     val_dataset = ChangeDetectionDataset(val_root_dir, transform=transform)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=8, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size, shuffle=True)
+    val_dataloader = DataLoader(val_dataset, batch_size, shuffle=False)
 
     # Trénování modelu
     train(model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs)
