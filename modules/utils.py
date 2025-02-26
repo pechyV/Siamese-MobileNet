@@ -23,15 +23,18 @@ def load_checkpoint(model, optimizer, checkpoint_path):
     logging.info(f"Načten checkpoint z {checkpoint_path}, epoch {checkpoint['epoch']}")
     return checkpoint['epoch']
 
-def setup_logging(log_file="./logs/training_log.txt"):
+def setup_logging(log_dir="./logs/"):
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
     logging.basicConfig(
         level=logging.INFO,  # Úroveň logování (INFO bude ukládat běžné zprávy)
         format="%(asctime)s - %(message)s",  # Formát zpráv
-        handlers=[logging.FileHandler(log_file), logging.StreamHandler()]  # Ukládání do souboru a výstup na terminál
+        handlers=[logging.FileHandler(log_dir + "log.txt"), logging.StreamHandler()]  # Ukládání do souboru a výstup na terminál
     )
 
 
-def visualize_results(t1, t2, mask, prediction, epoch, save_dir="visualizations"):
+def visualize_results(t1, t2, mask, prediction, epoch, save_dir="./visualizations"):
     """Vizualizuje vstupní snímky, ground truth masku a predikci, a ukládá je jako obrázky."""
     
     # Ujisti se, že složka pro ukládání existuje
