@@ -76,9 +76,9 @@ class SiameseUNet(nn.Module):
         return torch.sigmoid(x)
 
 # Enable multi-GPU support if available
-def get_model(device):
+def get_model(device, dual_gpu):
     model = SiameseUNet()
-    if torch.cuda.device_count() > 1:
+    if dual_gpu and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         
     model.to(device)

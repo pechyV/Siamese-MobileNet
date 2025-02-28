@@ -47,15 +47,16 @@ def train(model, train_dataloader, val_dataloader, criterion, optimizer, device,
 if __name__ == "__main__":
 
     """ Parametry """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = get_model(device)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
+    dual_gpu = False
+    model = get_model(device, dual_gpu)
     learning_rate = 0.001
-    num_epochs = 5
-    batch_size = 8
+    num_epochs = 10
+    batch_size = 16
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), learning_rate)
-    train_root_dir = "./test_dataset/train/"
-    val_root_dir = "./test_dataset/val/"
+    train_root_dir = "./dataset/train/"
+    val_root_dir = "./dataset/val/"
     out_model = "./trained_model/siamese_unet.pth"
     
     transform = transforms.Compose([
