@@ -10,25 +10,25 @@ Repository for Master Thesis "System for change detection from satellite data us
 ### Virtual enviroment
 create
 ```bash  
-`python -m venv` 
+python -m venv 
 ``` 
 activate
 ```bash  
-`.\venv\Scripts\activate`
+.\venv\Scripts\activate
 ```
 ### PyTorch CUDA
 ```bash
-`pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126` 
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126 
 ```
 ### Other libraries
 ```bash
-`pip install -r requirements.txt`
+pip install -r requirements.txt
 ```
 ### Run
 ```bash
-`python train.py`
+python train.py
 ```
 ### Evaluate
 ```bash
-`python eval.py`
+python eval.py
 ```
