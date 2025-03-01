@@ -6,13 +6,15 @@ from torch.utils.data import DataLoader
 from modules.dataset import ChangeDetectionDataset
 from model.siamese_unet import get_model
 from modules.utils import visualize_results, setup_logging, save_checkpoint, load_checkpoint, save_final_model, load_pretrained_model
+from modules.early_stop import EarlyStopping
 import logging
 import os
 
 # Nastavení logování
 setup_logging()
 
-def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/"):
+def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/", patience = 5):
+
     start_epoch = 0 # checkpoint
     checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{start_epoch}.pth")
     
@@ -22,6 +24,8 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
         model.to(device)
         logging.info(f"Pokračování tréninku od epochy {start_epoch+1}")
     
+    early_stopping = EarlyStopping(patience=patience)
+
     for epoch in range(start_epoch, num_epochs):
         model.train()  # Přepnutí modelu do režimu trénování
         epoch_loss = 0.0
@@ -48,6 +52,13 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
 
         logging.info(f"Epoch {epoch+1}/{num_epochs}, Validation Loss: {val_loss/len(val_dataloader):.4f}")
 
+        # Zavolání EarlyStopping
+        early_stopping(val_loss / len(val_dataloader))  # Předání průměrné validační ztráty
+
+        if early_stopping.early_stop:
+            logging.info("EARLY STOPPING: trénování zastaveno.")
+            break
+
         # Uložení checkpointu po každé epoše
         save_checkpoint(model, optimizer, epoch, checkpoint_dir)
         
@@ -60,10 +71,11 @@ if __name__ == "__main__":
     """ Parametry """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = get_model(0)
-    load_pretrain = True
+    load_pretrain = False
     learning_rate = 0.001
-    num_epochs = 10
+    num_epochs = 30
     batch_size = 16
+    patience = 5
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), learning_rate)
     train_root_dir = "./test_dataset/train/"
@@ -87,7 +99,7 @@ if __name__ == "__main__":
         if load_pretrained_model(model, pretrained_model):
             model.to(device)
 
-    train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir)
+    train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir, patience)
     
     # Uložení modelu po trénování
     save_final_model(model, out_model)
