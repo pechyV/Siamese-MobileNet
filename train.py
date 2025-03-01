@@ -13,7 +13,7 @@ import os
 # Nastavení logování
 setup_logging()
 
-def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/", patience = 5):
+def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/", patience = 3):
 
     start_epoch = 0 # checkpoint
     checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{start_epoch}.pth")
@@ -24,7 +24,7 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
         model.to(device)
         logging.info(f"Pokračování tréninku od epochy {start_epoch+1}")
     
-    early_stopping = EarlyStopping(patience=patience)
+    early_stopping = EarlyStopping(patience)
 
     for epoch in range(start_epoch, num_epochs):
         model.train()  # Přepnutí modelu do režimu trénování
