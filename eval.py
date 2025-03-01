@@ -12,7 +12,7 @@ import logging
 # Nastavení logování
 setup_logging()
 
-def evaluate():
+def evaluate(root_dir="./test_dataset/eval/"):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Načtení modelu
@@ -26,8 +26,8 @@ def evaluate():
         transforms.ToTensor()
     ])
 
-    test_dataset = ChangeDetectionDataset(root_dir="./dataset/test/", transform=test_transform)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
+    test_dataset = ChangeDetectionDataset(root_dir, transform=test_transform)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False, num_workers=0)
 
     # Inicializace confusion matrix a metrik
     c_matrix = {'tn': 0, 'fp': 0, 'fn': 0, 'tp': 0}

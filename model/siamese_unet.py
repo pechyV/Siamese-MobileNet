@@ -75,19 +75,16 @@ class SiameseUNet(nn.Module):
         x = self.final_conv(x)
         return torch.sigmoid(x)
 
-# Enable multi-GPU support if available
-def get_model(device, dual_gpu):
+def get_model(device_index):
     model = SiameseUNet()
-    if dual_gpu and torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
-        
-    model.to(device)
     
-    if torch.cuda.device_count() > 0:
-        logging.info(f"Using {torch.cuda.device_count()} GPU(s)!")
-        for i in range(torch.cuda.device_count()):
-            logging.info(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+    # Nastavení zařízení podle indexu GPU
+    if torch.cuda.is_available():
+        device = torch.device(f'cuda:{device_index}')  # Určuje konkrétní GPU
+        logging.info(f"Using GPU: {torch.cuda.get_device_name(device_index)}")
+        model.to(device)
     else:
         logging.info("No GPU available, using CPU.")
+        model.to('cpu')
     
     return model

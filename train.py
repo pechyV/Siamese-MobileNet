@@ -4,16 +4,25 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from modules.dataset import ChangeDetectionDataset
-from model.siamese_unet import SiameseUNet, get_model
-from modules.utils import visualize_results
-from modules.utils import setup_logging
+from model.siamese_unet import get_model
+from modules.utils import visualize_results, setup_logging, save_checkpoint, load_checkpoint, save_final_model, load_pretrained_model
 import logging
+import os
 
 # Nastavení logování
 setup_logging()
 
-def train(model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs):
-    for epoch in range(num_epochs):
+def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/"):
+    start_epoch = 0 # checkpoint
+    checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{start_epoch}.pth")
+    
+    # Pokud existuje checkpoint, načteme jej
+    if not load_pretrain and start_epoch > 0 and os.path.exists(checkpoint_path):
+        start_epoch = load_checkpoint(model, optimizer, checkpoint_path)
+        model.to(device)
+        logging.info(f"Pokračování tréninku od epochy {start_epoch+1}")
+    
+    for epoch in range(start_epoch, num_epochs):
         model.train()  # Přepnutí modelu do režimu trénování
         epoch_loss = 0.0
         for t1, t2, mask in train_dataloader:
@@ -30,7 +39,7 @@ def train(model, train_dataloader, val_dataloader, criterion, optimizer, device,
         # Validace po každé epoše
         model.eval()  # Přepnutí modelu do režimu evaluace
         val_loss = 0.0
-        with torch.no_grad():  # Deaktivujeme výpočty gradientů pro validaci
+        with torch.no_grad():
             for t1, t2, mask in val_dataloader:
                 t1, t2, mask = t1.to(device), t2.to(device), mask.to(device)
                 outputs = model(t1, t2)
@@ -39,40 +48,46 @@ def train(model, train_dataloader, val_dataloader, criterion, optimizer, device,
 
         logging.info(f"Epoch {epoch+1}/{num_epochs}, Validation Loss: {val_loss/len(val_dataloader):.4f}")
 
+        # Uložení checkpointu po každé epoše
+        save_checkpoint(model, optimizer, epoch, checkpoint_dir)
+        
         # Vizualizace výsledků po každé epoše
-        with torch.no_grad():  # Deaktivujeme výpočty gradientů pro vizualizaci
+        with torch.no_grad():
             t1, t2, mask = t1[0], t2[0], mask[0]  # První obrázek v dávce
-            visualize_results(t1, t2, mask, (outputs > 0.5).float()[0], epoch+1)  # Uložení obrázku pro aktuální epochu !!!včetně prahování (outputs > 0.5).float()
+            visualize_results(t1, t2, mask, (outputs > 0.5).float()[0], epoch+1)
 
 if __name__ == "__main__":
-
     """ Parametry """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
-    dual_gpu = False
-    model = get_model(device, dual_gpu)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = get_model(0)
+    load_pretrain = True
     learning_rate = 0.001
     num_epochs = 10
     batch_size = 16
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), learning_rate)
-    train_root_dir = "./dataset/train/"
-    val_root_dir = "./dataset/val/"
+    train_root_dir = "./test_dataset/train/"
+    val_root_dir = "./test_dataset/test/"
     out_model = "./trained_model/siamese_unet.pth"
+    pretrained_model = "./trained_model/siamese_unet.pth"
+    checkpoint_dir = "./checkpoints"
     
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
     
-    # Načítání trénovacího a validačního datasetu
     train_dataset = ChangeDetectionDataset(train_root_dir, transform=transform)
     val_dataset = ChangeDetectionDataset(val_root_dir, transform=transform)
 
     train_dataloader = DataLoader(train_dataset, batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size, shuffle=False)
 
-    # Trénování modelu
-    train(model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs)
+    # Načtení předtrénovaného modelu
+    if load_pretrain:           
+        if load_pretrained_model(model, pretrained_model):
+            model.to(device)
+
+    train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir)
     
     # Uložení modelu po trénování
-    torch.save(model.state_dict(), out_model)
-    logging.info("Model uložen jako siamese_unet.pth")
+    save_final_model(model, out_model)

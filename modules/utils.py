@@ -23,14 +23,30 @@ def load_checkpoint(model, optimizer, checkpoint_path):
     logging.info(f"Načten checkpoint z {checkpoint_path}, epoch {checkpoint['epoch']}")
     return checkpoint['epoch']
 
+def save_final_model(model, output_path="./trained_model/siamese_unet.pth"):
+    """Ukládá finální model po dokončení trénování."""
+    if not os.path.exists(os.path.dirname(output_path)):
+        os.makedirs(os.path.dirname(output_path))
+    torch.save(model.state_dict(), output_path)
+    logging.info(f"Finální model uložen jako {output_path}")
+
+def load_pretrained_model(model, model_path):
+    """Načte předtrénovaný model ze souboru."""
+    if not os.path.exists(model_path):
+        logging.error(f"Soubor {model_path} neexistuje!")
+        return False
+    model.load_state_dict(torch.load(model_path))
+    logging.info(f"Předtrénovaný model načten z {model_path}")
+    return True
+
 def setup_logging(log_dir="./logs/"):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
     logging.basicConfig(
-        level=logging.INFO,  # Úroveň logování (INFO bude ukládat běžné zprávy)
-        format="%(asctime)s - %(message)s",  # Formát zpráv
-        handlers=[logging.FileHandler(log_dir + "log.txt"), logging.StreamHandler()]  # Ukládání do souboru a výstup na terminál
+        level=logging.INFO,  
+        format="%(asctime)s - %(message)s", 
+        handlers=[logging.FileHandler(log_dir + "log.txt"), logging.StreamHandler()]
     )
 
 
@@ -68,5 +84,5 @@ def visualize_results(t1, t2, mask, prediction, epoch, save_dir="./visualization
     # Uložení obrázku jako soubor
     file_path = os.path.join(save_dir, f"epoch_{epoch}.png")
     plt.savefig(file_path)
-    plt.close(fig)  # Zavřít figuru, aby nezabírala paměť
+    plt.close(fig)
     logging.info(f"Obrázek pro epochu {epoch} uložen jako visualizations/epoch_{epoch}.png")
