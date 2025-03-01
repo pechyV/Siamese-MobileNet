@@ -15,7 +15,7 @@ setup_logging()
 
 def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/", patience = 3):
 
-    start_epoch = 0 # checkpoint
+    start_epoch = 0 # set checkpoint > 0
     checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{start_epoch}.pth")
     
     # Pokud existuje checkpoint, načteme jej

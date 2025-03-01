@@ -80,7 +80,7 @@ def get_model(device_index):
     
     # Nastavení zařízení podle indexu GPU
     if torch.cuda.is_available():
-        device = torch.device(f'cuda:{device_index}')  # Určuje konkrétní GPU
+        device = torch.device(f'cuda:{device_index}')
         logging.info(f"Using GPU: {torch.cuda.get_device_name(device_index)}")
         model.to(device)
     else:
