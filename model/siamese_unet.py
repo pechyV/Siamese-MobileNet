@@ -2,39 +2,43 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import logging 
+from model.cbam import CBAM
 
 class SiameseUNet(nn.Module):
     def __init__(self):
         super(SiameseUNet, self).__init__()
         
-        # Encoder
-        self.enc_conv1 = self.conv_block(1, 64)
-        self.enc_conv2 = self.conv_block(64, 128)
-        self.enc_conv3 = self.conv_block(128, 256)
-        self.enc_conv4 = self.conv_block(256, 512)
-        
-        # Bottleneck
-        self.bottleneck = self.conv_block(512, 1024)
-        
-        # Decoder
-        self.dec_conv4 = self.conv_block(1024 + 512, 512)
-        self.dec_conv3 = self.conv_block(512 + 256, 256)
-        self.dec_conv2 = self.conv_block(256 + 128, 128)
-        self.dec_conv1 = self.conv_block(128 + 64, 64)
+        self.enc_conv1 = self.conv_block(1, 64, use_cbam=False)
+        self.enc_conv2 = self.conv_block(64, 128, use_cbam=False)
+        self.enc_conv3 = self.conv_block(128, 256, use_cbam=False)
+        self.enc_conv4 = self.conv_block(256, 512, use_cbam=False)
+
+        # CBAM je pouze zde v bottlenecku!
+        self.bottleneck = self.conv_block(512, 1024, use_cbam=True)  
+
+        self.dec_conv4 = self.conv_block(1024 + 512, 512, use_cbam=False)
+        self.dec_conv3 = self.conv_block(512 + 256, 256, use_cbam=False)
+        self.dec_conv2 = self.conv_block(256 + 128, 128, use_cbam=False)
+        self.dec_conv1 = self.conv_block(128 + 64, 64, use_cbam=False)
+
         
         # Final output layer
         self.final_conv = nn.Conv2d(64, 1, kernel_size=1)
         
-    def conv_block(self, in_channels, out_channels):
-        """Returns a convolutional block with two convolutional layers followed by batch norm and ReLU."""
-        return nn.Sequential(
+    def conv_block(self, in_channels, out_channels, use_cbam=False):
+        """Konvoluční blok s možností přidání CBAM (pouze pro bottleneck)."""
+        layers = [
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
             nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
-        )
+            nn.ReLU(inplace=True),
+        ]
+        if use_cbam:
+            layers.append(CBAM(out_channels)) 
+        return nn.Sequential(*layers)
+
     
     def forward_once(self, x):
         """Passes a single input through the encoder path."""

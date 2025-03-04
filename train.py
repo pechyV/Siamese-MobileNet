@@ -72,10 +72,10 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = get_model(0)
     load_pretrain = False
-    learning_rate = 0.00005
-    num_epochs = 50
+    learning_rate = 0.0001
+    num_epochs = 20
     batch_size = 16
-    patience = 15
+    patience = 10
     criterion = nn.BCELoss()
     optimizer = optim.AdamW(model.parameters(), learning_rate)
     train_root_dir = "./EGY/train/"
