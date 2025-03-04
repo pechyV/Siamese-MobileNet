@@ -10,7 +10,7 @@ Repository for Master Thesis "System for change detection from satellite data us
 ### Virtual enviroment
 create
 ```bash  
-python -m venv 
+python -m venv venv
 ``` 
 activate
 ```bash  
@@ -32,3 +32,22 @@ python train.py
 ```bash
 python eval.py
 ```
+## Dataset
+
+```bash
+ dataset/
+ |-- train/
+ |   |-- t1/
+ |   |-- t2/
+ |   |-- mask/
+ |
+ |-- val/
+ |   |-- t1/
+ |   |-- t2/
+ |   |-- mask/
+ |
+ |-- test/
+ |   |-- t1/
+ |   |-- t2/
+ |   |-- mask/
+ ```
