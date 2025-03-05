@@ -9,6 +9,7 @@ from modules.utils import visualize_results, setup_logging, save_checkpoint, loa
 from modules.early_stop import EarlyStopping
 import logging
 import os
+import random
 
 # Nastavení logování
 setup_logging()
@@ -64,8 +65,11 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
         
         # Vizualizace výsledků po každé epoše
         with torch.no_grad():
-            t1, t2, mask = t1[0], t2[0], mask[0]  # První obrázek v dávce
-            visualize_results(t1, t2, mask, (outputs > 0.5).float()[0], epoch+1)
+            idx = random.randint(0, len(t1) - 1)
+            t1_sample, t2_sample, mask_sample = t1[idx], t2[idx], mask[idx]
+            pred_sample = (outputs > 0.5).float()[idx]
+
+            visualize_results(t1_sample, t2_sample, mask_sample, pred_sample, epoch+1)
 
 if __name__ == "__main__":
     """ Parametry """
@@ -73,23 +77,25 @@ if __name__ == "__main__":
     model = get_model(0)
     load_pretrain = False
     learning_rate = 0.0001
-    num_epochs = 20
+    num_epochs = 150
     batch_size = 16
     patience = 10
     criterion = nn.BCELoss()
-    optimizer = optim.AdamW(model.parameters(), learning_rate)
-    train_root_dir = "./EGY/train/"
-    val_root_dir = "./EGY/val/"
+    #optimizer = optim.AdamW(model.parameters(), learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), learning_rate, weight_decay=1e-5)
+    train_root_dir = "./dataset_2/train/"
+    val_root_dir = "./dataset_2/val/"
     out_model = "./trained_model/siamese_unet.pth"
-    pretrained_model = "./trained_model/siamese_unet.pth"
+    pretrained_model = ""
     checkpoint_dir = "./checkpoints"
     
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
     
-    train_dataset = ChangeDetectionDataset(train_root_dir, transform=transform)
-    val_dataset = ChangeDetectionDataset(val_root_dir, transform=transform)
+    train_dataset = ChangeDetectionDataset(train_root_dir, transform=transform, augment=True)
+    val_dataset = ChangeDetectionDataset(val_root_dir, transform=transform, augment=False)
+
 
     train_dataloader = DataLoader(train_dataset, batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size, shuffle=False)

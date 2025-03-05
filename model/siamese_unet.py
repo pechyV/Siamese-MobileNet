@@ -16,17 +16,18 @@ class SiameseUNet(nn.Module):
         # CBAM je pouze zde v bottlenecku!
         self.bottleneck = self.conv_block(512, 1024, use_cbam=True)  
 
-        self.dec_conv4 = self.conv_block(1024 + 512, 512, use_cbam=False)
-        self.dec_conv3 = self.conv_block(512 + 256, 256, use_cbam=False)
-        self.dec_conv2 = self.conv_block(256 + 128, 128, use_cbam=False)
-        self.dec_conv1 = self.conv_block(128 + 64, 64, use_cbam=False)
+        self.dec_conv4 = self.conv_block(1024 + 512, 512, use_cbam=False, use_dropout=True) # dropout jenom v dekoderu
+        self.dec_conv3 = self.conv_block(512 + 256, 256, use_cbam=False, use_dropout=True)
+        self.dec_conv2 = self.conv_block(256 + 128, 128, use_cbam=False, use_dropout=True)
+        self.dec_conv1 = self.conv_block(128 + 64, 64, use_cbam=False, use_dropout=True)
+
 
         
         # Final output layer
         self.final_conv = nn.Conv2d(64, 1, kernel_size=1)
         
-    def conv_block(self, in_channels, out_channels, use_cbam=False):
-        """Konvoluční blok s možností přidání CBAM (pouze pro bottleneck)."""
+    def conv_block(self, in_channels, out_channels, use_cbam=False, use_dropout=False):
+        """Konvoluční blok s volitelným CBAM a Dropout2d"""
         layers = [
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(out_channels),
@@ -35,10 +36,14 @@ class SiameseUNet(nn.Module):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
         ]
-        if use_cbam:
-            layers.append(CBAM(out_channels)) 
-        return nn.Sequential(*layers)
 
+        if use_cbam:
+            layers.append(CBAM(out_channels))  # CBAM by měl být před Dropoutem
+        
+        if use_dropout:
+            layers.append(nn.Dropout2d(p=0.3))
+        
+        return nn.Sequential(*layers)
     
     def forward_once(self, x):
         """Passes a single input through the encoder path."""
