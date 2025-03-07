@@ -83,8 +83,8 @@ if __name__ == "__main__":
     criterion = nn.BCELoss()
     #optimizer = optim.AdamW(model.parameters(), learning_rate)
     optimizer = torch.optim.Adam(model.parameters(), learning_rate, weight_decay=1e-5)
-    train_root_dir = "./dataset_2/train/"
-    val_root_dir = "./dataset_2/val/"
+    train_root_dir = "./dataset/train/"
+    val_root_dir = "./dataset/val/"
     out_model = "./trained_model/siamese_unet.pth"
     pretrained_model = ""
     checkpoint_dir = "./checkpoints"

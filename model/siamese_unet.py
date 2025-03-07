@@ -13,7 +13,7 @@ class SiameseUNet(nn.Module):
         self.enc_conv3 = self.conv_block(128, 256, use_cbam=False)
         self.enc_conv4 = self.conv_block(256, 512, use_cbam=False)
 
-        # CBAM je pouze zde v bottlenecku!
+        # CBAM je pouze v bottlenecku!
         self.bottleneck = self.conv_block(512, 1024, use_cbam=True)  
 
         self.dec_conv4 = self.conv_block(1024 + 512, 512, use_cbam=False, use_dropout=True) # dropout jenom v dekoderu
