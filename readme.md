@@ -12,6 +12,10 @@ Repository for Master Thesis "System for change detection from satellite data us
 - IoU: 0.7794
 - Pixel Accuracy: 0.9690
 
+## Model architecture
+
+![architecture](images/unet.png)
+
 ## Requirements
 
 ### Python 3.13.2 
