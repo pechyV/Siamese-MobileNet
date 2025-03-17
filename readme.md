@@ -3,6 +3,15 @@
 
 Repository for Master Thesis "System for change detection from satellite data using artificial intelligence" at BUT Brno 2025.
 
+![evaluation](images/eval_1.png)
+![evaluation](images/eval_2.png)
+
+- Precision: 0.9473
+- Recall: 0.9007
+- F1-Score: 0.9235
+- IoU: 0.7794
+- Pixel Accuracy: 0.9690
+
 ## Requirements
 
 ### Python 3.13.2 
