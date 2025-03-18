@@ -14,18 +14,17 @@ import random
 # Nastavení logování
 setup_logging()
 
-def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/", patience = 3):
+def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/", patience = 5, min_delta = 0.0001):
 
     start_epoch = 0 # set checkpoint > 0
     checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{start_epoch}.pth")
     
-    # Pokud existuje checkpoint, načteme jej
     if not load_pretrain and start_epoch > 0 and os.path.exists(checkpoint_path):
         start_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         model.to(device)
-        logging.info(f"Pokračování tréninku od epochy {start_epoch+1}")
+        logging.info(f"Continue from epoch {start_epoch+1}")
     
-    early_stopping = EarlyStopping(patience)
+    early_stopping = EarlyStopping(patience, min_delta)
 
     for epoch in range(start_epoch, num_epochs):
         model.train()  # Přepnutí modelu do režimu trénování
@@ -57,7 +56,7 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
         early_stopping(val_loss / len(val_dataloader))  # Předání průměrné validační ztráty
 
         if early_stopping.early_stop:
-            logging.info("EARLY STOPPING: trénování zastaveno.")
+            logging.info("EARLY STOPPING: training shuted down.")
             break
 
         # Uložení checkpointu po každé epoše
@@ -65,11 +64,24 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
         
         # Vizualizace výsledků po každé epoše
         with torch.no_grad():
-            idx = random.randint(0, len(t1) - 1)
-            t1_sample, t2_sample, mask_sample = t1[idx], t2[idx], mask[idx]
-            pred_sample = (outputs > 0.5).float()[idx]
+            indices = random.sample(range(len(t1)), min(5, len(t1)))  # Unikátní indexy
+            for idx in indices:
+                t1_sample, t2_sample, mask_sample = t1[idx], t2[idx], mask[idx]
+                pred_sample = (outputs > 0.5).float()[idx]
 
-            visualize_results(t1_sample, t2_sample, mask_sample, pred_sample, epoch+1)
+                save_visualization(t1_sample, t2_sample, mask_sample, pred_sample, epoch+1, idx)
+
+
+# Funkce pro ukládání výsledků
+def save_visualization(t1_sample, t2_sample, mask_sample, pred_sample, epoch, idx):
+    save_dir = "./visualizations"
+    epoch_dir = os.path.join(save_dir, f"epoch_{epoch}")
+    os.makedirs(epoch_dir, exist_ok=True)
+    
+    visualize_results(t1_sample, t2_sample, mask_sample, pred_sample, epoch, idx, save_dir)
+
+
+
 
 if __name__ == "__main__":
     """ Parametry """
@@ -77,14 +89,15 @@ if __name__ == "__main__":
     model = get_model(0)
     load_pretrain = False
     learning_rate = 0.0001
-    num_epochs = 150
+    num_epochs = 100
     batch_size = 16
     patience = 10
-    criterion = nn.BCELoss()
-    #optimizer = optim.AdamW(model.parameters(), learning_rate)
-    optimizer = torch.optim.Adam(model.parameters(), learning_rate, weight_decay=1e-5)
-    train_root_dir = "./dataset/train/"
-    val_root_dir = "./dataset/val/"
+    min_delta = 0.0001
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer = optim.AdamW(model.parameters(), learning_rate, weight_decay=1e-5)
+    #optimizer = torch.optim.Adam(model.parameters(), learning_rate, weight_decay=1e-5)
+    train_root_dir = "./test_dataset/train/"
+    val_root_dir = "./test_dataset/val/"
     out_model = "./trained_model/siamese_unet.pth"
     pretrained_model = ""
     checkpoint_dir = "./checkpoints"
@@ -105,7 +118,8 @@ if __name__ == "__main__":
         if load_pretrained_model(model, pretrained_model):
             model.to(device)
 
-    train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir, patience)
+    train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir, patience, min_delta)
     
     # Uložení modelu po trénování
     save_final_model(model, out_model)
+    logging.info(f"Model size: {os.path.getsize(out_model) / (1024 * 1024):.2f} MB")

@@ -12,7 +12,7 @@ import logging
 # Nastavení logování
 setup_logging()
 
-def evaluate(root_dir="./dataset/test/"):
+def evaluate(root_dir="./EGY_dataset/test/"):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Načtení modelu
@@ -88,7 +88,7 @@ def evaluate(root_dir="./dataset/test/"):
     mean_pixel_acc = total_pixel_acc / num_samples if num_samples > 0 else 0
 
     # Výpis metrik
-    logging.info("Evaluace:")
+    logging.info("Evaluation:")
     logging.info(f'Precision: {P:.4f}')
     logging.info(f'Recall: {R:.4f}')
     logging.info(f'F1-Score: {F1:.4f}')
