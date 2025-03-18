@@ -9,7 +9,6 @@ import numpy as np
 from modules.utils import setup_logging
 import logging
 
-# Nastavení logování
 setup_logging()
 
 def evaluate(root_dir="./EGY_dataset/test/"):

@@ -52,12 +52,10 @@ def setup_logging(log_dir="./logs/"):
 def visualize_results(t1, t2, mask, prediction, epoch, idx, save_dir="./visualizations"):
     """Vizualizuje vstupní snímky, ground truth masku a predikci, a ukládá je jako obrázky."""
     
-    # Vytvoření složky pro epochu, pokud neexistuje
     epoch_dir = os.path.join(save_dir, f"epoch_{epoch}")
     if not os.path.exists(epoch_dir):
         os.makedirs(epoch_dir)
 
-    # Ujisti se, že jsou tensorové objekty přesunuty na CPU a přetvořeny na numpy pole
     if isinstance(t1, torch.Tensor):
         t1 = t1.cpu().detach().numpy()
     if isinstance(t2, torch.Tensor):
@@ -81,7 +79,7 @@ def visualize_results(t1, t2, mask, prediction, epoch, idx, save_dir="./visualiz
     for ax in axs:
         ax.axis("off")
     
-    # Uložení obrázku jako soubor s unikátním názvem (např. epoch_1_sample_0.png)
+    # Uložení obrázku jako soubor
     file_path = os.path.join(epoch_dir, f"sample_{idx}.png")
     plt.savefig(file_path)
     plt.close(fig)

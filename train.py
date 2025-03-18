@@ -81,8 +81,6 @@ def save_visualization(t1_sample, t2_sample, mask_sample, pred_sample, epoch, id
     visualize_results(t1_sample, t2_sample, mask_sample, pred_sample, epoch, idx, save_dir)
 
 
-
-
 if __name__ == "__main__":
     """ Parametry """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
