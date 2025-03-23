@@ -87,7 +87,7 @@ if __name__ == "__main__":
     model = get_model(0)
     load_pretrain = False
     learning_rate = 0.0001
-    num_epochs = 100
+    num_epochs = 30
     batch_size = 16
     patience = 10
     min_delta = 0.0001
