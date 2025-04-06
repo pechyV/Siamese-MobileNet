@@ -14,15 +14,14 @@ import random
 # Nastavení logování
 setup_logging()
 
-def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir="./checkpoints/", patience = 5, min_delta = 0.0001):
+def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, start_epoch = 0, checkpoint_dir="./checkpoints/", patience = 5, min_delta = 0.0001):
 
-    start_epoch = 0 # set checkpoint > 0
     checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{start_epoch}.pth")
     
     if not load_pretrain and start_epoch > 0 and os.path.exists(checkpoint_path):
         start_epoch = load_checkpoint(model, optimizer, checkpoint_path)
         model.to(device)
-        logging.info(f"Continue from epoch {start_epoch+1}")
+        logging.info(f"Continue from epoch {start_epoch}")
     
     early_stopping = EarlyStopping(patience, min_delta)
 
@@ -86,16 +85,17 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = get_model(0)
     load_pretrain = False
+    start_epoch = 49 # > 0 pro checkpoint
     learning_rate = 0.0001
-    num_epochs = 30
+    num_epochs = 80
     batch_size = 16
     patience = 10
     min_delta = 0.0001
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.AdamW(model.parameters(), learning_rate, weight_decay=1e-5)
     #optimizer = torch.optim.Adam(model.parameters(), learning_rate, weight_decay=1e-5)
-    train_root_dir = "./test_dataset/train/"
-    val_root_dir = "./test_dataset/val/"
+    train_root_dir = "../dataset/train/"
+    val_root_dir = "../dataset/val/"
     out_model = "./trained_model/siamese_unet.pth"
     pretrained_model = ""
     checkpoint_dir = "./checkpoints"
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         if load_pretrained_model(model, pretrained_model):
             model.to(device)
 
-    train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, checkpoint_dir, patience, min_delta)
+    train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, start_epoch, checkpoint_dir, patience, min_delta)
     
     # Uložení modelu po trénování
     save_final_model(model, out_model)

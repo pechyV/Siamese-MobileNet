@@ -11,7 +11,7 @@ import logging
 
 setup_logging()
 
-def evaluate(root_dir="./EGY_dataset/test/"):
+def evaluate(root_dir="../dataset/test/"):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Načtení modelu

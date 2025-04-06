@@ -81,8 +81,7 @@ class SiameseUNet(nn.Module):
         # Final output
         x = self.final_conv(x)
 
-        # **Fix: Upsample the output to match the target size**
-        x = F.interpolate(x, size=(256, 256), mode='bilinear', align_corners=True)  # Ensure output matches target
+        x = F.interpolate(x, size=(256, 256), mode='bilinear', align_corners=True) 
 
         return x
 
