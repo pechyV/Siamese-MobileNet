@@ -18,10 +18,10 @@ class SiameseUNet(nn.Module):
         # Bottleneck layer to match output channels
         self.bottleneck = nn.Conv2d(1280, 256, kernel_size=1)
 
-        # Decoder blocks (Ensure correct input channels)
+        # Decoder blocks (Ensure correct input channels) 
         self.dec_conv4 = self.conv_block(256 + 160, 256) 
         self.dec_conv3 = self.conv_block(256 + 64, 128)   
-        self.dec_conv2 = self.conv_block(128 + 32, 64)    
+        self.dec_conv2 = self.conv_block(128 + 32, 64)   
         self.dec_conv1 = self.conv_block(64 + 24, 32)    
 
 

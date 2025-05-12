@@ -15,7 +15,7 @@ def evaluate(root_dir="../dataset/test/"):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Načtení modelu
-    model_path = "./trained_model/siamese_unet.pth"
+    model_path = "./trained_model/siamese_unet_grid_search.pth"
     model = SiameseUNet().to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()

@@ -14,7 +14,7 @@ import random
 # Nastavení logování
 setup_logging()
 
-def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, start_epoch = 0, checkpoint_dir="./checkpoints/", patience = 5, min_delta = 0.0001):
+def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, start_epoch=0, checkpoint_dir="./checkpoints/", patience=5, min_delta=0.0001, scheduler=None):
 
     checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_epoch_{start_epoch}.pth")
     
@@ -51,6 +51,10 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
 
         logging.info(f"Epoch {epoch+1}/{num_epochs}, Validation Loss: {val_loss/len(val_dataloader):.4f}")
 
+        if scheduler is not None:
+            scheduler.step(val_loss / len(val_dataloader))
+
+
         # Zavolání EarlyStopping
         early_stopping(val_loss / len(val_dataloader))  # Předání průměrné validační ztráty
 
@@ -69,6 +73,8 @@ def train(load_pretrain, model, train_dataloader, val_dataloader, criterion, opt
                 pred_sample = (outputs > 0.5).float()[idx]
 
                 save_visualization(t1_sample, t2_sample, mask_sample, pred_sample, epoch+1, idx)
+    
+    return val_loss / len(val_dataloader)
 
 
 # Funkce pro ukládání výsledků
@@ -85,14 +91,14 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = get_model(0)
     load_pretrain = False
-    start_epoch = 49 # > 0 pro checkpoint
-    learning_rate = 0.0001
-    num_epochs = 80
+    start_epoch = 0 # > 0 pro checkpoint
+    learning_rate = 5e-05
+    num_epochs = 100
     batch_size = 16
     patience = 10
     min_delta = 0.0001
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = optim.AdamW(model.parameters(), learning_rate, weight_decay=1e-5)
+    optimizer = optim.AdamW(model.parameters(), learning_rate, weight_decay=0.0001)
     #optimizer = torch.optim.Adam(model.parameters(), learning_rate, weight_decay=1e-5)
     train_root_dir = "../dataset/train/"
     val_root_dir = "../dataset/val/"
