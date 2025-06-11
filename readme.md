@@ -1,20 +1,21 @@
 
 # System for change detection from satellite data using artificial intelligence
 
-Repository for Master Thesis "System for change detection from satellite data using artificial intelligence" at BUT Brno 2025.
-
 ![evaluation](images/eval_1.png)
 ![evaluation](images/eval_2.png)
+![evaluation](images/eval_3.png)
+![evaluation](images/eval_4.png)
 
-- Precision: 0.9473
-- Recall: 0.9007
-- F1-Score: 0.9235
-- IoU: 0.7794
-- Pixel Accuracy: 0.9690
+- Precision: 0.9428
+- Recall: 0.8794
+- F1-Score: 0.9100
+- IoU: 0.7383
+- Pixel Accuracy: 0.9638
+- Size: 10.63MB
 
 ## Model architecture
 
-![architecture](images/unet.png)
+![architecture](images/mobilenet.png)
 
 ## Requirements
 
